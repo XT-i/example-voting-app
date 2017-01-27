@@ -12,6 +12,8 @@ io.set('transports', ['polling']);
 
 var port = process.env.PORT || 4000;
 
+var globalVotes = {a: 0, b: 0};
+
 io.sockets.on('connection', function (socket) {
 
   socket.emit('message', { text : 'Welcome!' });
@@ -46,6 +48,7 @@ function getVotes(client) {
       console.error("Error performing query: " + err);
     } else {
       var votes = collectVotesFromResult(result);
+      globalVotes = votes;
       io.sockets.emit("scores", JSON.stringify(votes));
     }
 
@@ -77,6 +80,10 @@ app.use(express.static(__dirname + '/views'));
 
 app.get('/', function (req, res) {
   res.sendFile(path.resolve(__dirname + '/views/index.html'));
+});
+
+app.get('/votes', function (req, res) {
+  res.json(globalVotes)
 });
 
 server.listen(port, function () {
